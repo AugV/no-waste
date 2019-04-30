@@ -22,4 +22,4 @@ const usersDataSchema = new Schema(
 );
 
 // export the new Schema so we could modify it using Node.js
-module.exports = mongoose.model("usersCollection", usersDataSchema);
+module.exports = mongoose.model("usersCollection", usersDataSchema, "users");

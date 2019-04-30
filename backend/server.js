@@ -8,6 +8,7 @@ const logger = require('morgan');
 const userData = require('./usersCollection');
 const productData = require('./defProductsCollection');
 const request = require('request');
+const MongoClient = require('mongodb').MongoClient;
 
 const API_PORT = 3001;
 const app = express();
@@ -15,7 +16,7 @@ app.use(cors());
 const router = express.Router();
 
 // this is our MongoDB database
-const dbRoute = "mongodb+srv://Admin:drdnt123@no-waste-db-uvhq9.mongodb.net/test?retryWrites=true";
+const dbRoute = "mongodb+srv://Admin:drdnt123@no-waste-db-uvhq9.mongodb.net/no-waste-app?retryWrites=true";
 
 // connects our back end code with the database
 mongoose.connect(
@@ -35,10 +36,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
 
-request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', {json: true}, (err, res, body)=>{
-    if(err){return console.log(err);}
-    console.log(body.meals);
+request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', { json: true }, (err, res, body) => {
+    if (err) { return console.log(err); }
+    products = body.meals;
+    try {
+        console.log("removing old data from " + productData.collection.name.toUpperCase);
+        productData.deleteMany({}, (e) => { console.log(e) });
+        console.log("adding new data to " + productData.collection.name.toUpperCase);
+        productData.insertMany(products);
+    } catch (e) { console.log(e) }
 });
+
 
 
 // this is our get method

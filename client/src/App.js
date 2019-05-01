@@ -1,17 +1,16 @@
-
-// import * as bs from 'bootstrap/dist/css/bootstrap.css';
-// import * as bst from 'bootstrap/dist/css/bootstrap-theme.css';
 import React, { Component } from "react";
 import axios from "axios";
 import ListGroup from 'react-bootstrap/ListGroup';
-import {Button} from 'react-bootstrap';
+import Container from 'react-bootstrap/Container'
+import { Button } from 'react-bootstrap';
+import Navbar from 'react-bootstrap/Navbar'
 
 
 class App extends Component {
   // initialize our state 
   state = {
     products: [],
-    userEmail:"mock@email.com",
+    userEmail: "mock@email.com",
     id: 0,
     message: null,
     intervalIsSet: false,
@@ -29,7 +28,7 @@ class App extends Component {
     // this.setState({ intervalIsSet: null });
   }
 
-  
+
   componentWillUnmount() {
     if (this.state.intervalIsSet) {
       clearInterval(this.state.intervalIsSet);
@@ -38,10 +37,8 @@ class App extends Component {
   }
 
 
-
- 
   getDataFromDb = () => {
-    axios.get('http://localhost:3001/api/userData',
+    axios.get('http://192.168.1.171:3001/api/userData',
       { params: { userEmail: this.state.userEmail } })
       .then((res) => {
         this.setState({ products: res.data.data.products });
@@ -109,12 +106,24 @@ class App extends Component {
 
   render() {
     const products = this.state.products;
-    const listItems = products.map((d) => <li key={d.productId}>{d.productName}</li>);
+    // const listItems = products.map((d) => <li key={d.productId}>{d.productName}</li>);
+    const listItems = products.map((d) => <ListGroup.Item action>
+      <span style={{ float: 'left' }}>{d.productName}</span>
+      <span style={{ float: 'right' }}>{d.expirydate}</span>
+    </ListGroup.Item>);
     return (
-      <div>
-   <Button variant="success">Success</Button>
-</div>
-     );
+      <Container>
+        <Navbar expand="lg" variant="light" bg="light">
+          <Navbar.Brand href="?">No-Waste</Navbar.Brand>
+        </Navbar>
+
+        <h3>Product list</h3>
+        <ListGroup defaultActiveKey="#link1">
+          {listItems}
+        </ListGroup>
+        <Button variant="primary" size="lg" block>Add</Button>
+      </Container>
+    );
   }
 }
 

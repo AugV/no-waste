@@ -8,7 +8,6 @@ const logger = require('morgan');
 const userData = require('./usersCollection');
 const productData = require('./defProductsCollection');
 const request = require('request');
-const MongoClient = require('mongodb').MongoClient;
 
 const API_PORT = 3001;
 const app = express();
@@ -38,13 +37,44 @@ app.use(logger("dev"));
 
 request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', { json: true }, (err, res, body) => {
     if (err) { return console.log(err); }
-    products = body.meals;
-    try {
-        console.log("removing old data from " + productData.collection.name.toUpperCase);
-        productData.deleteMany({}, (e) => { console.log(e) });
-        console.log("adding new data to " + productData.collection.name.toUpperCase);
-        productData.insertMany(products);
-    } catch (e) { console.log(e) }
+    if (body) {
+        products = body.meals;
+        try {
+            console.log("removing old data from " + productData.collection.name.toUpperCase);
+            productData.deleteMany({}, (e) => { console.log(e) });
+            console.log("adding new data to " + productData.collection.name.toUpperCase);
+            productData.insertMany(products);
+        } catch (e) { console.log(e) }
+    }
+    else { console.log("nothing received from MealDB") }
+});
+
+// userData.create({
+//     "userName": "mock",
+//     "userEmail": "mock@email.com",
+//     "products": [{
+//         "productId": "2",
+//         "productName": "Salmon",
+//         "description": "mock descr",
+//         "creationDate": null,
+//         "modificationDate": null,
+//         "expirydate": null,
+//         "category": "Fish",
+//         "priority": null
+//     }]
+// }, (err, res) => {
+//     if (err) { return console.log(err); }
+//     else{console.log("MOCK ADDED");}
+// })
+
+
+router.get("/userData", (req, res) => {
+    userEmail = req.query.userEmail;
+
+    userData.findOne({"userEmail": userEmail}, (err, data) => {
+        if (err) return res.json({ success: false, error: err });
+        return res.json({ success: true, data: data });
+    });
 });
 
 
@@ -100,7 +130,7 @@ request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', { json: true
 // });
 
 // // append /api for our http requests
-// app.use("/api", router);
+app.use("/api", router);
 
 // launch our backend into a port
 app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));

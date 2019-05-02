@@ -1,9 +1,13 @@
+
 const mongoose = require('mongoose');
 const express = require('express');
 var cors = require('cors');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
-const Data = require('./data');
+// const Data = require('./data');
+const userData = require('./usersCollection');
+const productData = require('./defProductsCollection');
+const request = require('request');
 
 const API_PORT = 3001;
 const app = express();
@@ -11,7 +15,7 @@ app.use(cors());
 const router = express.Router();
 
 // this is our MongoDB database
-const dbRoute = "mongodb+srv://Admin:drdnt123@no-waste-db-uvhq9.mongodb.net/test?retryWrites=true";
+const dbRoute = "mongodb+srv://Admin:drdnt123@no-waste-db-uvhq9.mongodb.net/no-waste-app?retryWrites=true";
 
 // connects our back end code with the database
 mongoose.connect(
@@ -22,7 +26,6 @@ mongoose.connect(
 let db = mongoose.connection;
 
 db.once("open", () => console.log("connected to the database"));
-
 // checks if connection with the database is successful
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
@@ -32,57 +35,83 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
 
-// this is our get method
-// this method fetches all available data in our database
-router.get("/getData", (req, res) => {
-    Data.find((err, data) => {
+request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', { json: true }, (err, res, body) => {
+    if (err) { return console.log(err); }
+    if (body) {
+        products = body.meals;
+        try {
+            console.log("removing old data from " + productData.collection.name.toUpperCase);
+            productData.deleteMany({}, (e) => { console.log(e) });
+            console.log("adding new data to " + productData.collection.name.toUpperCase);
+            productData.insertMany(products);
+        } catch (e) { console.log(e) }
+    }
+    else { console.log("nothing received from MealDB") }
+});
+
+// userData.create({
+//     "userName": "mock",
+//     "userEmail": "mock@email.com",
+//     "products": [{
+//         "productId": "2",
+//         "productName": "Salmon",
+//         "description": "mock descr",
+//         "creationDate": null,
+//         "modificationDate": null,
+//         "expirydate": null,
+//         "category": "Fish",
+//         "priority": null
+//     }]
+// }, (err, res) => {
+//     if (err) { return console.log(err); }
+//     else{console.log("MOCK ADDED");}
+// })
+
+
+router.get("/userData", (req, res) => {
+    userEmail = req.query.userEmail;
+
+    userData.findOne({ "userEmail": userEmail }, (err, data) => {
         if (err) return res.json({ success: false, error: err });
         return res.json({ success: true, data: data });
     });
 });
 
-// this is our update method
-// this method overwrites existing data in our database
-router.post("/updateData", (req, res) => {
-    const { id, update } = req.body;
-    Data.findOneAndUpdate(id, update, err => {
+
+router.get("/productList", (req, res) => {
+    productData.find({}, (err, data) => {
         if (err) return res.json({ success: false, error: err });
-        return res.json({ success: true });
-    });
-});
+        return res.json({ success: true, data: data });
+    })
+})
 
-// this is our delete method
-// this method removes existing data in our database
-router.delete("/deleteData", (req, res) => {
-    const { id } = req.body;
-    Data.findOneAndDelete(id, err => {
-        if (err) return res.send(err);
-        return res.json({ success: true });
-    });
-});
-
-// this is our create methid
-// this method adds new data in our database
-router.post("/putData", (req, res) => {
-    let data = new Data();
-
-    const { id, message } = req.body;
-
-    if ((!id && id !== 0) || !message) {
-        return res.json({
-            success: false,
-            error: "INVALID INPUTS"
-        });
+router.post("/addProduct", (req, res) => {
+    console.log(req.body.userEmail);
+    var product = {
+        "productId": req.body.productId,
+        "productName": req.body.productName,
+        "description": req.body.description,
+        "creationDate": "under-construction XD",
+        "modificationDate": "under-construction XD",
+        "expirydate": req.body.expirydate,
+        "category": "under-construction XD",
+        "priority": 1
     }
-    data.message = message;
-    data.id = id;
-    data.save(err => {
-        if (err) return res.json({ success: false, error: err });
-        return res.json({ success: true });
-    });
-});
+    userData.findOneAndUpdate(
+        { userEmail: req.body.userEmail },
+        { $push: { products: product } },
+        function (error, success) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log(success);
+            }
+        }
+    )
+}
+)
 
-// append /api for our http requests
+// // append /api for our http requests
 app.use("/api", router);
 
 // launch our backend into a port

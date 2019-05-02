@@ -13,20 +13,22 @@ function AppRouter() {
       <Navbar expand="lg" variant="light" bg="light">
         <Navbar.Brand href="?">No-Waste</Navbar.Brand>
       </Navbar>
+
+
+      <Nav justify variant="tabs" defaultActiveKey="/">
+        <Nav.Item>
+          <Nav.Link href="/">Product List</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link href="/AddScreen/">Add Product</Nav.Link>
+        </Nav.Item>
+      </Nav>
+
       <Router>
-
-        <Nav justify variant="tabs" defaultActiveKey="/">
-          <Nav.Item>
-            <Nav.Link href="/">Product List</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link href="/AddScreen/">Add Product</Nav.Link>
-          </Nav.Item>
-        </Nav>
-
         <Route path="/" exact component={HomeScreen} />
         <Route path="/AddScreen/" component={AddScreen} />
       </Router>
+
     </Container>
   );
 }

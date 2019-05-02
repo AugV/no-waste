@@ -3,10 +3,16 @@ import axios from "axios";
 import ListGroup from 'react-bootstrap/ListGroup';
 import Container from 'react-bootstrap/Container'
 import { Button } from 'react-bootstrap';
-import Navbar from 'react-bootstrap/Navbar'
+import Navbar from 'react-bootstrap/Navbar';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
+import AddScreen from "./AddScreen";
 
 class HomeScreen extends Component {
+    constuctor() {
+        this.routeChange = this.routeChange.bind(this);
+      }
     // initialize our state 
     state = {
         products: [],
@@ -19,7 +25,11 @@ class HomeScreen extends Component {
         objectToUpdate: null
     };
 
-
+    routeChange() {
+        let path = `/about/`;
+        this.props.history.push(path);
+      }
+    
     componentDidMount() {
         this.getDataFromDb();
         if (!this.state.intervalIsSet) {
@@ -60,17 +70,13 @@ class HomeScreen extends Component {
         return (
             <Router>
                 <Container>
-                    <Navbar expand="lg" variant="light" bg="light">
-                        <Navbar.Brand href="?">No-Waste</Navbar.Brand>
-                    </Navbar>
-
-                    <h3>Product list</h3>
                     <ListGroup defaultActiveKey="#link1">
                         {listItems}
                     </ListGroup>
                     <Button variant="primary"
                         size="lg"
                         block
+                        onClick={this.routeChange}
                     >Add</Button>
                 </Container>
             </Router>
@@ -78,4 +84,4 @@ class HomeScreen extends Component {
     }
 }
 
-export default HomeScreen;
+export default withRouter(HomeScreen);

@@ -7,12 +7,12 @@ const usersDataSchema = new Schema(
         "userName": String,
         "userEmail": String,
         "products": [{
-            "productId": Number,
+            "productId": String,
             "productName": String, 
             "description": String, 
-            "creationDate": Date, 
-            "modificationDate": Date, 
-            "expirydate": Date, 
+            "creationDate": String, 
+            "modificationDate": String, 
+            "expirydate": String, 
             "category": String, 
             "priority": Number
         }]

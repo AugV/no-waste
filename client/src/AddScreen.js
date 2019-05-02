@@ -11,18 +11,19 @@ class AddScreen extends Component {
 
         this.handleShow = this.handleShow.bind(this);
         this.handleClose = this.handleClose.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleAdd = this.handleAdd.bind(this);
 
         this.state = {
             products: [],
             userEmail: "mock@email.com",
-            id: 0,
-            message: null,
             intervalIsSet: false,
-            idToDelete: null,
-            idToUpdate: null,
-            objectToUpdate: null,
             show: false,
-            value: 'test'
+
+            productId: '',
+            productName: '',
+            description: '',
+            expirydate: ''
         };
 
 
@@ -54,10 +55,29 @@ class AddScreen extends Component {
             );
     }
 
+    storeDataToDb = () => {
+        var product = this.state.products.find((o) => { return o.idIngredient === this.state.productId });
+
+
+        axios.post('http://192.168.1.171:3001/api/addProduct',
+            {
+                userEmail: this.state.userEmail,
+                productId: this.state.productId,
+                productName: product.strIngredient,
+                description: product.strDescription,
+                expirydate: this.state.expirydate,
+            }).then(function (response) {
+                console.log(response);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+            }
+
     render() {
         const products = this.state.products;
         const listItems = products.map((d) =>
-            <ListGroup.Item action onClick={this.handleShow}>
+            <ListGroup.Item action data-id={d.idIngredient} onClick={this.handleShow.bind(this)}>
                 <span style={{ float: 'left' }}>{d.strIngredient}</span>
                 <span style={{ float: 'right' }}>{d.strDescription}</span>
             </ListGroup.Item>);
@@ -71,13 +91,13 @@ class AddScreen extends Component {
                         <Modal.Title>Enter expiry date</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                    <Form.Control onChange = {this.handleChange} placeholder="YYYY.MM.DD" />
+                        <Form.Control onChange={this.handleChange} placeholder="YYYY.MM.DD" />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={this.handleClose}>
                             Close
                 </Button>
-                        <Button variant="primary" onClick={this.handleClose}>
+                        <Button variant="primary" onClick={this.handleAdd}>
                             Add Product
                 </Button>
                     </Modal.Footer>
@@ -87,22 +107,20 @@ class AddScreen extends Component {
     }
 
     handleChange(event) {
-        // this.setState({ value: event.target.value });
-        console.log(event.target.value);
+        this.setState({ expirydate: event.target.value });
+    }
+
+    handleAdd() {
+        this.setState({ show: false});
+        this.storeDataToDb();
     }
 
     handleClose() {
-        this.setState({ show: false });
+        this.setState({ show: false, productId: '', expirydate: '' });
     }
 
-    handleClose() {
-        this.setState({ show: false });
-        // console.log()
-
-    }
-
-    handleShow() {
-        this.setState({ show: true });
+    handleShow(event) {
+        this.setState({ show: true, productId: event.currentTarget.dataset.id });
     }
 }
 

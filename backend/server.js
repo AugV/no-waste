@@ -71,20 +71,45 @@ request('https://www.themealdb.com/api/json//v1/1/list.php?i=list', { json: true
 router.get("/userData", (req, res) => {
     userEmail = req.query.userEmail;
 
-    userData.findOne({"userEmail": userEmail}, (err, data) => {
+    userData.findOne({ "userEmail": userEmail }, (err, data) => {
         if (err) return res.json({ success: false, error: err });
         return res.json({ success: true, data: data });
     });
 });
 
 
-router.get("/productList", (req, res)=>{
+router.get("/productList", (req, res) => {
     productData.find({}, (err, data) => {
         if (err) return res.json({ success: false, error: err });
         return res.json({ success: true, data: data });
     })
 })
 
+router.post("/addProduct", (req, res) => {
+    console.log(req.body.userEmail);
+    var product = {
+        "productId": req.body.productId,
+        "productName": req.body.productName,
+        "description": req.body.description,
+        "creationDate": "under-construction XD",
+        "modificationDate": "under-construction XD",
+        "expirydate": req.body.expirydate,
+        "category": "under-construction XD",
+        "priority": 1
+    }
+    userData.findOneAndUpdate(
+        { userEmail: req.body.userEmail },
+        { $push: { products: product } },
+        function (error, success) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log(success);
+            }
+        }
+    )
+}
+)
 
 // // append /api for our http requests
 app.use("/api", router);
